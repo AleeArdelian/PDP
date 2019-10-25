@@ -51,50 +51,49 @@ namespace Non_cooperative_threads.Repositories
         {
             return _storeProducts.Find(x => x.Name == _name);
         }
-        public Product BuyProduct(string pName, int quant, Mutex _mutex)
+       
+        public void BuyBill(Bill _bill, Mutex _mutex)
         {
-            var _bought = _storeProducts.Find(x => x.Name == pName);
-            var _billProduct = new Product();
-            _billProduct.Name = pName;
-
-            _mutex.WaitOne();
-            QuantityStatus status = _bought.CheckQuantity(quant);
-            _mutex.ReleaseMutex();
-
-            if (status == QuantityStatus.Empty)
+            foreach ( var _prod in _bill.SoldProducts)
             {
-                _mutex.WaitOne();
-                
-                _billProduct.Quantity = 0;
-                _billProduct.Price = 0;
+                var _bought = _storeProducts.Find(x => x.Name == _prod.Name);
+                QuantityStatus status = _bought.CheckQuantity(_prod.Quantity);
 
-                _mutex.ReleaseMutex();
-                return _billProduct;
+                if (status == QuantityStatus.Empty)
+                {
+                    _mutex.WaitOne();
+                    _prod.Quantity = 0;
+                    _prod.Price = 0;
+                    _bill.TotalPrice += 0;
+                    Console.WriteLine("Thread " + Thread.CurrentThread.ManagedThreadId + " cannot buy " + _prod.Name + ". The quantity is 0");
+                    _mutex.ReleaseMutex();
+                }
+                else
+                {
+                    if (status == QuantityStatus.NotEnoughPieces)
+                    {
+                        _mutex.WaitOne();
+
+                        _prod.Quantity = _bought.Quantity;
+                        _bought.Quantity = 0;
+                        _prod.Price = _bought.Price * _prod.Quantity;
+                        _bill.TotalPrice += _prod.Price;
+                        Console.WriteLine("Thread " + Thread.CurrentThread.ManagedThreadId + " bought " + _prod.Name + " of quantity " + _prod.Quantity + "\n");
+
+                        _mutex.ReleaseMutex();
+                    }
+                    else
+                    {
+                        _mutex.WaitOne();
+
+                        _bought.Quantity -= _prod.Quantity;
+                        _bill.TotalPrice += _prod.Price;
+                        Console.WriteLine("Thread " + Thread.CurrentThread.ManagedThreadId + " bought " + _prod.Name + " of quantity " + _prod.Quantity + "\n");
+
+                        _mutex.ReleaseMutex();
+                    }
+                }
             }
-
-            if( status == QuantityStatus.NotEnoughPieces)
-            {
-                _mutex.WaitOne();
-
-                _billProduct.Quantity = _bought.Quantity;
-                _billProduct.Price = _bought.Quantity * _bought.Price;
-                _bought.Quantity = 0;
-
-                _mutex.ReleaseMutex();
-                return _billProduct;
-            }
-
-            else
-            {
-                _mutex.WaitOne();
-
-                _billProduct.Quantity = quant;
-                _billProduct.Price = quant * _bought.Price;
-                _bought.Quantity -= quant;
-
-                _mutex.ReleaseMutex();
-                return _billProduct;
-            }  
         }
     }
 }
