@@ -88,41 +88,49 @@ namespace Non_cooperative_threads.Service
             foreach (var _product in _shoppingList)
                     _bill.AddProduct(_product);
             
-            ProductRepository.BuyBill(_bill, _mutex);
-            _mutex.WaitOne();
-            BillRepository.TotalBills.Add(_bill);
-            BillRepository.TotalPrice += _bill.TotalPrice;
-            _mutex.ReleaseMutex();
+            var _billToBuy = ProductRepository.CheckBill(_bill, _mutex);
+            var _billToAdd = new Bill();
+            BillRepository.TotalBills.Add(_billToAdd);
+
+            foreach (var _prod in _billToBuy.SoldProducts)
+            {
+                var _bought = ProductRepository.StoreProducts.Find(x => x.Name == _prod.Name);
+                _mutex.WaitOne();
+                _bought.Quantity -= _prod.Quantity;
+                _billToAdd.SoldProducts.Add(_prod);
+                _billToAdd.TotalPrice += _prod.Price;
+                Console.WriteLine("Thread " + Thread.CurrentThread.ManagedThreadId + " bought " + _prod.Name + " of quantity " + _prod.Quantity + "\n");
+
+                _mutex.ReleaseMutex();
+            }
         }
 
         public void Check(Mutex _mutex)
         {
-            //_mutex.WaitOne();
-            lock (BillRepository)
+            _mutex.WaitOne();
+            Console.WriteLine("-----------IN CHECK---------------");
+
+            var _originalStoreProducts = ProductRepository.OriginalStoreProducts;
+            var _updatedStore = ProductRepository.StoreProducts;
+
+            var _allSoldProductsOnBills = BillRepository.AllUniqueProductsSoldInEntireRepository();
+            var _totalPrice = 0;
+            foreach (var _product in _allSoldProductsOnBills)
             {
-                lock (ProductRepository)
+                _totalPrice += _product.Price;
+                var originalP = _originalStoreProducts.Find(x => x.Name == _product.Name);
+                var updatedP = _updatedStore.Find(x => x.Name == _product.Name);
+                if (!(updatedP.Quantity == originalP.Quantity - _product.Quantity))
                 {
-                    Console.WriteLine("-----------IN CHECK---------------");
-
-                    var _originalStoreProducts = _productRepository.OriginalStoreProducts;
-                    var _updatedStore = _productRepository.StoreProducts;
-
-                    var _allSoldProductsOnBills = BillRepository.AllUniqueProductsSoldInEntireRepository();
-                    foreach (var _product in _allSoldProductsOnBills)
+                    if (BillRepository.TotalPrice == _totalPrice)
                     {
-                        var originalP = _originalStoreProducts.Find(x => x.Name == _product.Name);
-                        var updatedP = _updatedStore.Find(x => x.Name == _product.Name);
-                        if (!(updatedP.Quantity == originalP.Quantity - _product.Quantity))
-                        {
-                            Console.WriteLine("NORMAL CA NU MERGE FMM");
-                            //_mutex.ReleaseMutex();
-                            return;
-                        }
+                        Console.WriteLine("SOMETHING IS NOT RIGHT :( ");
+                        return;
                     }
-                    Console.WriteLine("ASA CEVA NU SE POATE");
-                    //_mutex.ReleaseMutex();
                 }
             }
+            Console.WriteLine("YOU DID IT :)");
+            _mutex.ReleaseMutex();
         }
     }
 }

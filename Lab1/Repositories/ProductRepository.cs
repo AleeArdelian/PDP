@@ -52,7 +52,7 @@ namespace Non_cooperative_threads.Repositories
             return _storeProducts.Find(x => x.Name == _name);
         }
        
-        public void BuyBill(Bill _bill, Mutex _mutex)
+        public Bill CheckBill(Bill _bill, Mutex _mutex)
         {
             foreach ( var _prod in _bill.SoldProducts)
             {
@@ -65,7 +65,6 @@ namespace Non_cooperative_threads.Repositories
                     _prod.Quantity = 0;
                     _prod.Price = 0;
                     _bill.TotalPrice += 0;
-                    Console.WriteLine("Thread " + Thread.CurrentThread.ManagedThreadId + " cannot buy " + _prod.Name + ". The quantity is 0");
                     _mutex.ReleaseMutex();
                 }
                 else
@@ -75,25 +74,18 @@ namespace Non_cooperative_threads.Repositories
                         _mutex.WaitOne();
 
                         _prod.Quantity = _bought.Quantity;
-                        _bought.Quantity = 0;
                         _prod.Price = _bought.Price * _prod.Quantity;
                         _bill.TotalPrice += _prod.Price;
-                        Console.WriteLine("Thread " + Thread.CurrentThread.ManagedThreadId + " bought " + _prod.Name + " of quantity " + _prod.Quantity + "\n");
 
                         _mutex.ReleaseMutex();
                     }
                     else
                     {
-                        _mutex.WaitOne();
-
-                        _bought.Quantity -= _prod.Quantity;
                         _bill.TotalPrice += _prod.Price;
-                        Console.WriteLine("Thread " + Thread.CurrentThread.ManagedThreadId + " bought " + _prod.Name + " of quantity " + _prod.Quantity + "\n");
-
-                        _mutex.ReleaseMutex();
                     }
                 }
             }
+            return _bill;
         }
     }
 }

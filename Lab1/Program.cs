@@ -17,15 +17,14 @@ namespace Non_cooperative_threads
 
             _salesManager.PopulateRandom();
 
-            Thread _checkT = new Thread(new ThreadStart( () =>
-            {
-                for (int i = 0; i <= 5; i++)
-                {
-                    _salesManager.Check(_mutex);
-                    Thread.Sleep(300);
-                }
-            }));
-            //_checkT.Start();
+            Thread _checkT = new Thread(new ThreadStart(() =>
+           {
+               for (int i = 0; i <= 5; i++)
+               {
+                   _salesManager.Check(_mutex);
+                   Thread.Sleep(2);
+               }
+           }));
 
             for (int i=0; i<10; i++)
             {
@@ -44,36 +43,26 @@ namespace Non_cooperative_threads
             //    if (i > _checkThreads.Count - 1)
             //    {
             //        _threads[i].Start();
-            //        //Thread.Sleep(200);
+            //        Thread.Sleep(300);
             //    }
             //    else
             //    {
             //        _threads[i].Start();
             //        _checkThreads[i].Start();
-            //        //Thread.Sleep(300);
+            //        Thread.Sleep(300);
             //    }
             //}
 
             //Thread _checkT = new Thread(new ThreadStart(() => _salesManager.Check(_mutex)));
             //_checkT.Start();
 
-
-
-            //Thread tid = new Thread(new ThreadStart(() => _salesManager.BuyProducts(_mutex)));
-            //tid.Start();
-
-            //tid.Join();
-            //Thread _checkT = new Thread(new ThreadStart(() => _salesManager.Check(_mutex)));
-            //_checkT.Start();
+            _checkT.Start();
             foreach (Thread t in _threads)
                 t.Start();
 
             foreach (Thread t in _threads)
                 t.Join();
-
-            
-            //foreach (Thread t in _checkThreads)
-            //    t.Join();
+            _checkT.Join();
 
             Console.ReadLine();
         }

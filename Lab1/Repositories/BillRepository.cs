@@ -41,7 +41,7 @@ namespace Non_cooperative_threads.Repositories
         public List<Product> AllUniqueProductsSoldInEntireRepository()
         {
             List<Product> _productsSoldInAllBills = new List<Product>();
-            foreach (var _bill in _totalBills)
+            foreach (var _bill in TotalBills)
             {
                 foreach (Product p in _bill.SoldProducts)
                 {
