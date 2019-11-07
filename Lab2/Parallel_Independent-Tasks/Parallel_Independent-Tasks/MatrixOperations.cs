@@ -4,14 +4,14 @@ using System.Text;
 
 namespace Parallel_Independent_Tasks
 {
-    public class MatrixSum
+    public class MatrixOperations
     {
         private Matrix _first;
         private Matrix _second;
         private Matrix _result;
         int _nrThreads;
 
-        public MatrixSum(Matrix f, Matrix s, int nr)
+        public MatrixOperations(Matrix f, Matrix s, int nr)
         {
             _first = f;
             _second = s;
@@ -45,17 +45,17 @@ namespace Parallel_Independent_Tasks
 
         public Dictionary<int, List<Tuple<int, int>>> ThreadElements(Matrix m)
         {
-            List<int> _nrElementsForThreads = DivideMatrix();
+            List<int> _nrElementsForThreads = DivideMatrix(); // 2 threads with 5 and 4 elems
             Dictionary<int, List<Tuple<int, int>>> _matrixDividedInThreads = new Dictionary<int, List<Tuple<int, int>>>();
             int index = 0;
-            for(int i=0; i<_nrElementsForThreads.Count; i++) //2 threads
+            for(int i=0; i<_nrElementsForThreads.Count; i++)
             {
                 var _nrElements = _nrElementsForThreads[i]; //nr of elements in thread
                 List<Tuple<int,int>> _threadElementsPositions = m.GetElementsBetweenIndexes(index, _nrElements+index);
                 _matrixDividedInThreads.Add(i, _threadElementsPositions);
                 index = _nrElements;
             }
-            return _matrixDividedInThreads;
+            return _matrixDividedInThreads; // list with index and tuples of positions for the elements in one thread
         }
 
         public void AddMatrices(List<Tuple<int,int>> _firstThreadElements, List<Tuple<int, int>> _secondThreadElements)

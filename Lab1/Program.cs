@@ -32,30 +32,7 @@ namespace Non_cooperative_threads
                 _threads.Add(tid1);
             }
 
-            //for (int i = 0; i < 5; i++)//threadnumber/2
-            //{
-            //    Thread _checkT = new Thread(new ThreadStart(() => _salesManager.Check(_mutex)));
-            //    _checkThreads.Add(_checkT);
-            //}
-
-            //for (int i = 0; i < 10; i++) //threadnumber
-            //{
-            //    if (i > _checkThreads.Count - 1)
-            //    {
-            //        _threads[i].Start();
-            //        Thread.Sleep(300);
-            //    }
-            //    else
-            //    {
-            //        _threads[i].Start();
-            //        _checkThreads[i].Start();
-            //        Thread.Sleep(300);
-            //    }
-            //}
-
-            //Thread _checkT = new Thread(new ThreadStart(() => _salesManager.Check(_mutex)));
-            //_checkT.Start();
-
+            
             _checkT.Start();
             foreach (Thread t in _threads)
                 t.Start();

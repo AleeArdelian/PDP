@@ -64,6 +64,7 @@ namespace Non_cooperative_threads.Repositories
                     _mutex.WaitOne();
                     _prod.Quantity = 0;
                     _prod.Price = 0;
+
                     _bill.TotalPrice += 0;
                     _mutex.ReleaseMutex();
                 }

@@ -95,13 +95,18 @@ namespace Non_cooperative_threads.Service
             foreach (var _prod in _billToBuy.SoldProducts)
             {
                 var _bought = ProductRepository.StoreProducts.Find(x => x.Name == _prod.Name);
-                _mutex.WaitOne();
-                _bought.Quantity -= _prod.Quantity;
-                _billToAdd.SoldProducts.Add(_prod);
-                _billToAdd.TotalPrice += _prod.Price;
-                Console.WriteLine("Thread " + Thread.CurrentThread.ManagedThreadId + " bought " + _prod.Name + " of quantity " + _prod.Quantity + "\n");
+                if (_bought.Quantity == 0)
+                    Console.WriteLine("Thread " + Thread.CurrentThread.ManagedThreadId + " cannot buy " + _prod.Name + ", the quantity is " + "\n");
+                else
+                {
+                    _mutex.WaitOne();
 
-                _mutex.ReleaseMutex();
+                    _bought.Quantity -= _prod.Quantity;
+                    _billToAdd.SoldProducts.Add(_prod);
+                    _billToAdd.TotalPrice += _prod.Price;
+                    Console.WriteLine("Thread " + Thread.CurrentThread.ManagedThreadId + " bought " + _prod.Name + " of quantity " + _prod.Quantity + "\n");
+                    _mutex.ReleaseMutex();
+                }
             }
         }
 
