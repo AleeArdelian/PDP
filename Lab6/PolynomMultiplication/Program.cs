@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace PolynomMultiplication
 {
@@ -26,22 +28,35 @@ namespace PolynomMultiplication
             int[] B = { 1, 2, 4 };  // polynomial 1 + 2x + 4x^2 
 
             ResultPolyinom resultPol = new ResultPolyinom(A, B, A.Length, B.Length, 2);
-            resultPol.multiply();
+            
+            //Sequencial
+            //resultPol.multiplySeq();
 
+            List<Tuple<int, int>> threadPos = resultPol.threadElements();
+            int threadCount = threadPos.Count;
+            
 
+            //Seq with threads
+            using (ManualResetEvent resetEvent = new ManualResetEvent(false))
+            {
+                foreach (var tup in threadPos)
+                {
+                    ThreadPool.QueueUserWorkItem(new WaitCallback(x =>
+                    {
+                        resultPol.multipySeqWithThreads(x);
+                        if (Interlocked.Decrement(ref threadCount) == 0)
+                            resetEvent.Set();
+                    }), tup);
+                }
+                resetEvent.WaitOne();
+            }
 
-            foreach (Tuple<int, int> tup in resultPol.threadElements())
-                Console.WriteLine(tup.Item1 + " " + tup.Item2 + "/n");
-
-
-
-
-            //Console.WriteLine("First polynomial");
-            //printPoly(A, A.Length);
-            //Console.WriteLine("\nSecond polynomial");
-            //printPoly(B, B.Length);
-            //Console.WriteLine("\nProduct polynomial ");
-            //printPoly(resultPol.Result, resultPol.Len);
+            Console.Write("First polynomial  ");
+            printPoly(A, A.Length);  
+            Console.Write("\nSecond polynomial  ");
+            printPoly(B, B.Length);
+            Console.Write("\nProduct polynomial  ");
+            printPoly(resultPol.Result, resultPol.Len);
         }
     }
 }

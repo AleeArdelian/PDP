@@ -32,21 +32,22 @@ namespace PolynomMultiplication
             Len = aLen + bLen - 1;
             NrThreads = nrThr;
             Result = new int[Len];
+            for (int i = 0; i < len; i++)
+                Result[i] = 0;
         }
 
-        public void multiply()
+        public void multiplySeq()
         {
-            for (int i = 0; i < len; i++)
-            {
-                result[i] = 0;
-            }
             for (int i = 0; i < ALength; i++)
-            {
                 for (int j = 0; j < BLength; j++)
-                {
-                    result[i + j] += A[i] * B[j];
-                }
-            }
+                    Result[i + j] += A[i] * B[j];
+        }
+        public void multipySeqWithThreads(object tuple)
+        {
+            Tuple<int, int> elNumberAndPos = (Tuple<int, int>)tuple;
+            for (int i = elNumberAndPos.Item2; i < elNumberAndPos.Item2+ elNumberAndPos.Item1; i++)
+                for (int j = 0; j < BLength; j++)
+                    Result[i + j] += A[i] * B[j];
         }
 
         public List<Tuple<int,int>> threadElements()
@@ -67,10 +68,10 @@ namespace PolynomMultiplication
                     _left--;
                 }
             }
-            int pos = 1;
+            int pos = 0;
             foreach( int elNr in numberOfElementsForThreads)
             {
-                numberOfElemsAndStartPosition.Add(new Tuple<int, int>(elNr, pos-1));
+                numberOfElemsAndStartPosition.Add(new Tuple<int, int>(elNr, pos));
                 pos = elNr;
             }
 
