@@ -6,3 +6,7 @@ packages
 *.config
 Properties
 .vs
+
+*.vcxproj
+.idea/
+Debug/
