@@ -6,3 +6,6 @@ packages
 *.config
 Properties
 .vs
+
+*.vcxproj
+
